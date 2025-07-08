@@ -219,7 +219,7 @@ import requests
 # except Exception as e:
 #     print("⚠️ Error reenviando True a main:", e)
 
-UPDATE_URL = "http://192.168.49.111:3000/actualizacion"
+UPDATE_URL = "http://192.168.51.43:3000/actualizacion"
 
 try:
     resp = requests.post(
