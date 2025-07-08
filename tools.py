@@ -4,17 +4,51 @@ from time import sleep
 from instrucciones import client_context
 from pathlib import Path
 import os
+from pymysql.cursors import DictCursor
 import json
 import socket
 import pymysql
+
 config_file= r'C:\AgentedeVozPython\config.json'
 with open(config_file, 'r', encoding='utf-8') as f:
     config = json.load(f)
 
-API_BASE = "http://192.168.50.13/agc/api.php"
-SOURCE = "test"
-USER = config['username']
-PASSWORD = config['user_password']
+ip_local = socket.gethostbyname(socket.gethostname())
+
+try:
+    conn = pymysql.connect(
+        host='192.168.50.13',
+        user='lhernandez',
+        password='lhernandez10',
+        database='asterisk',
+        cursorclass=DictCursor,
+        connect_timeout=5,
+        charset='utf8mb4'
+    )
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT alias, nombre FROM agentesDepuracion WHERE ip = %s LIMIT 1",
+            (ip_local,)
+        )
+        row = cur.fetchone()
+    conn.close()
+except Exception as e:
+    print(f"❌ Error al conectar a BD: {e}")
+    row = None
+
+if row:
+    config['extension']     = row['alias']
+    config['username']      = row['nombre']
+    if row['nombre'] == "BOTo":
+        config['user_password'] = "Cyberbot2024"
+    print(f"✅ Datos desde BD: ext={config['extension']}, user={config['username']}")
+else:
+    print(f"⚠️ No encontré registro para IP {ip_local}; uso config.json")
+
+API_BASE   = "http://192.168.50.13/agc/api.php"
+SOURCE     = "test"
+USER       = config['username']
+PASSWORD   = config['user_password']
 AGENT_USER = config['username']
 
 def call_vicidial_tool(function: str, value: str = "1", extra_args: dict = {}) -> dict:

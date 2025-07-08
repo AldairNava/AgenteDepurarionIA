@@ -98,7 +98,7 @@ class VicidialAutomation:
         # 2) Obtengo la IP local real del equipo
         ip_local = socket.gethostbyname(socket.gethostname())
 
-        # 3) Conecto a la BD y traigo extension+username para esta IP
+        # 3) Conecto a la BD y traigo alias+nombre para esta IP
         try:
             conn = pymysql.connect(
                 host='192.168.50.13',
@@ -122,13 +122,19 @@ class VicidialAutomation:
 
         # 4) Si encontré datos, sobrescribo los del JSON
         if row:
-            cfg['extension'] = row['alias']
-            cfg['username']  = row['nombre']
+            cfg['extension']     = row['alias']
+            cfg['username']      = row['nombre']
             print(f"✅ Cargando credenciales: ext={row['alias']} user={row['nombre']}")
+
+            # 5) Validación extra: si el nombre es "BOTo", ajusto también el user_password
+            if row['nombre'] == "BOTo":
+                cfg['user_password'] = "Cyberbot2024"
+                print("🔒 user_password actualizado para BOTo")
         else:
             print(f"⚠️ No existe registro en agentesDepuracion para IP {ip_local}; usando valores de config.json")
 
         return cfg
+
 
     def _login(self, username, password):
         user_field = self.driver.find_element(By.XPATH,
@@ -339,9 +345,9 @@ def control_automation_get():
     return jsonify(running=is_running), 200
 
 
-if __name__ == '__main__':
-    # Arranca solo Flask; la automatización la lanzas vía POST /automation
-    app.run(host='0.0.0.0', port=3000)
+# if __name__ == '__main__':
+#     # Arranca solo Flask; la automatización la lanzas vía POST /automation
+#     app.run(host='0.0.0.0', port=3000)
 
-# if __name__ == "__main__":
-#     asyncio.run(iniciar_automatizacion_async())
+if __name__ == "__main__":
+    asyncio.run(iniciar_automatizacion_async())
