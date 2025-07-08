@@ -212,24 +212,23 @@ import requests
 #     print("Respuesta JSON:", resp.json())
 # except Exception as e:
 #     print("Error al enviar la petición:", e)
-# MAIN_SERVICE_URL = "http://localhost:3000/estado"
-# try:
-#     resp = requests.post(MAIN_SERVICE_URL, json={"estado": False},timeout=180)
-#     print("→ Reenvío a main:", resp.status_code, resp.text)
-# except Exception as e:
-#     print("⚠️ Error reenviando True a main:", e)
-
-UPDATE_URL = "http://192.168.51.43:3000/actualizacion"
-
+MAIN_SERVICE_URL = "http://localhost:3000/estado"
 try:
-    resp = requests.post(
-        UPDATE_URL,
-        json={"status": True},
-        timeout=30
-    )
-    print("→ POST /actualizacion:", resp.status_code, resp.text)
+    resp = requests.post(MAIN_SERVICE_URL, json={"estado": True},timeout=180)
+    print("→ Reenvío a main:", resp.status_code, resp.text)
 except Exception as e:
-    print("⚠️ Error al llamar a /actualizacion:", e)
+    print("⚠️ Error reenviando True a main:", e)
+
+# UPDATE_URL = "http://192.168.49.111:3001/actualizacion"
+
+# try:
+#     resp = requests.post(
+#         UPDATE_URL,
+#         json={"status": True}
+#     )
+#     print("→ POST /actualizacion:", resp.status_code, resp.text)
+# except Exception as e:
+#     print("⚠️ Error al llamar a /actualizacion:", e)
 
 # controlar_proceso(True)
 

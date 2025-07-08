@@ -64,7 +64,7 @@ def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
     except Exception as e:
         return {"result": "False", "error": str(e)}
 
-def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipoficacion: str) -> dict:
+def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str) -> dict:
     sleep(5)
     external_hangup()
 
@@ -75,7 +75,7 @@ def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipoficacion: str
     registro["status"]    = "Pendiente"
     registro["cn_type"]   = cn_type
     registro["cn_motivo"] = cn_motivo
-    registro["tipoficacion"] = tipoficacion
+    registro["tipoficacion"] = tipificacion
 
     columnas     = ", ".join(registro.keys())
     marcadores   = ", ".join(["%s"] * len(registro))
@@ -111,28 +111,28 @@ def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipoficacion: str
     actualizar_actividad("En Espera")
 
     # Mapeo completo de tipificaciones
-    if tipoficacion == 'SCCAVT':
+    if tipificacion == 'SCCAVT':
         external_status_SCCAVT()
-    elif tipoficacion == 'SCCOVT':
+    elif tipificacion == 'SCCOVT':
         external_status_SCCOVT()
-    elif tipoficacion == 'SCTSVT':
+    elif tipificacion == 'SCTSVT':
         external_status_SCTSVT()
-    elif tipoficacion == 'SCMADI':
+    elif tipificacion == 'SCMADI':
         external_status_SCMADI()
-    elif tipoficacion == 'SCCCUE':
+    elif tipificacion == 'SCCCUE':
         external_status_SCCCUE()
-    elif tipoficacion == 'SCMADI':
+    elif tipificacion == 'SCMADI':
         external_status_SCMADI()
-    elif tipoficacion == 'SIN CONTACTO':
+    elif tipificacion == 'SIN CONTACTO':
         external_status_SCCCUE()
-    elif tipoficacion == 'NI':
+    elif tipificacion == 'NI':
         external_status_SCCCUE()
-    elif tipoficacion == 'NCBUZ':
+    elif tipificacion == 'NCBUZ':
         external_status_NCBUZ()
-    elif tipoficacion == 'SCNUEQ':
+    elif tipificacion == 'SCNUEQ':
         external_status_SCNUEQ()
     else:
-        tipoficacion = "OTRO"
+        tipificacion = "OTRO"
         print("⚠️ Tipificación incorrecta o no reconocida.")
 
     return {"result": "ok"}
