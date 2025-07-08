@@ -124,7 +124,7 @@ class VicidialAutomation:
         if row:
             cfg['extension'] = row['alias']
             cfg['username']  = row['nombre']
-            print(f"✅ Cargando credenciales: ext={row['extension']} user={row['username']}")
+            print(f"✅ Cargando credenciales: ext={row['alias']} user={row['nombre']}")
         else:
             print(f"⚠️ No existe registro en agentesDepuracion para IP {ip_local}; usando valores de config.json")
 
