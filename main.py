@@ -275,6 +275,58 @@ def control_automation_get():
     return jsonify(running=is_running), 200
 
 
+def _run_automation_safe():
+    # Wrapper que arranca tu automatización
+    _run_automation('config.json')
+
+
+@app.route('/actualizacion', methods=['POST'])
+def actualizar_repositorio():
+    global automation_thread
+
+    data   = request.get_json(force=True)
+    status = data.get('status', False)
+
+    # Sólo procedemos si status es True
+    if status is not True:
+        return jsonify(error="status debe ser true"), 400
+
+    # 1) Si el agente está corriendo, lo detenemos
+    if automation_thread and automation_thread.is_alive():
+        open(shutdown_file, 'w').close()
+        # esperamos a que el hilo realmente termine
+        automation_thread.join(timeout=30)
+
+    # 2) Hacemos el git pull en tu carpeta de proyecto
+    try:
+        # Opcional: cambiar de directorio si es necesario
+        # os.chdir(r"C:\ruta\a\tu\proyecto")
+        resultado = subprocess.run(
+            ["git", "pull", "--rebase"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        return jsonify(
+            error="Error al hacer git pull",
+            salida=e.stdout,
+            error_output=e.stderr
+        ), 500
+
+    # 3) (Re)iniciamos el agente
+    automation_thread = threading.Thread(
+        target=_run_automation_safe,
+        daemon=True
+    )
+    automation_thread.start()
+
+    return jsonify(
+        actualizado=True,
+        git_stdout=resultado.stdout
+    ), 200
+
+
 if __name__ == '__main__':
     # Arranca solo Flask; la automatización la lanzas vía POST /automation
     app.run(host='0.0.0.0', port=3000)

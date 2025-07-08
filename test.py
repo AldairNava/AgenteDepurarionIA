@@ -219,17 +219,17 @@ import requests
 # except Exception as e:
 #     print("⚠️ Error reenviando True a main:", e)
 
-UPDATE_URL = "http://192.168.49.111:3000/estado"
+UPDATE_URL = "http://192.168.49.111:3000/actualizacion"
 
 try:
     resp = requests.post(
         UPDATE_URL,
-        json={"estado": False},
+        json={"status": True},
         timeout=30
     )
-    print("→ repsueta", resp.status_code, resp.text)
+    print("→ POST /actualizacion:", resp.status_code, resp.text)
 except Exception as e:
-    print("⚠️ Error", e)
+    print("⚠️ Error al llamar a /actualizacion:", e)
 
 # controlar_proceso(True)
 
