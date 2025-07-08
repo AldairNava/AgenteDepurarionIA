@@ -10,7 +10,7 @@ from time import sleep
 from ctypes import wintypes
 from selenium import webdriver
 from streaming_cli import start_agent
-from flask import Flask, request, Response, stream_with_context, jsonify
+from flask import Flask, request, jsonify
 from selenium.webdriver.common.by import By
 from tools import *
 
