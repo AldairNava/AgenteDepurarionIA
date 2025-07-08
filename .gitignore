@@ -1,0 +1,9 @@
+# Archivos Python compilados
+*.pyc
+__pycache__/
+
+# Carpeta de distribución
+dist/
+
+# Tu archivo de configuración local
+.env

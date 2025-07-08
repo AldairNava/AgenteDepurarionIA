@@ -1,0 +1,31 @@
+extencion depura 1
+ {
+     "url": "http:192.168.50.13/agc/vicidial.php",
+     "extension": "4001",
+     "password": "Cyber123",
+     "username": "dep1",
+     "user_password": "Cyber123",
+     "campaign_value": "3002 - Depuracion", 3006 - PruebaBot
+     "ip":"192.168.50.13"
+ }
+ extencion depura 2
+ {
+     "url": "http:192.168.50.13/agc/vicidial.php",
+     "extension": "4002",
+     "password": "Cyber123",
+     "username": "dep2",
+     "user_password": "Cyber123",
+     "campaign_value": "3002 - Depuracion", 3006 - PruebaBot
+     "ip":"192.168.50.13"
+ }
+
+ {
+    "url": "http://192.168.50.13/agc/vicidial.php",
+    "extension": "6428",
+    "password": "Cyber123",
+    "username": "BOTo",
+    "user_password": "Cyberbot2024",
+    "campaign_value": "3002 - Depuracion", 3006 - PruebaBot
+    "ip":"192.168.50.13"
+}
+
