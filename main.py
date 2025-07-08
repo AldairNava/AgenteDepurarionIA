@@ -111,7 +111,7 @@ class VicidialAutomation:
             )
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "SELECT extension, username FROM agentesDepuracion WHERE ip = %s LIMIT 1",
+                    "SELECT alias, nombre FROM agentesDepuracion WHERE ip = %s LIMIT 1",
                     (ip_local,)
                 )
                 row = cursor.fetchone()
@@ -122,8 +122,8 @@ class VicidialAutomation:
 
         # 4) Si encontré datos, sobrescribo los del JSON
         if row:
-            cfg['extension'] = row['extension']
-            cfg['username']  = row['username']
+            cfg['extension'] = row['alias']
+            cfg['username']  = row['nombre']
             print(f"✅ Cargando credenciales: ext={row['extension']} user={row['username']}")
         else:
             print(f"⚠️ No existe registro en agentesDepuracion para IP {ip_local}; usando valores de config.json")
