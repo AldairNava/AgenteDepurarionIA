@@ -212,9 +212,9 @@ import requests
 #     print("Respuesta JSON:", resp.json())
 # except Exception as e:
 #     print("Error al enviar la petición:", e)
-MAIN_SERVICE_URL = "http://192.168.51.43:3000/estado"
+MAIN_SERVICE_URL = "http://192.168.49.111:3000/estado"
 try:
-    resp = requests.post(MAIN_SERVICE_URL, json={"estado": True},timeout=180)
+    resp = requests.post(MAIN_SERVICE_URL, json={"estado": False},timeout=180)
     print("→ Reenvío a main:", resp.status_code, resp.text)
 except Exception as e:
     print("⚠️ Error reenviando True a main:", e)
