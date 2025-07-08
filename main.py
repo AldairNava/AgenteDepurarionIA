@@ -10,6 +10,9 @@ from time import sleep
 from ctypes import wintypes
 from selenium import webdriver
 from streaming_cli import start_agent
+import socket
+import pymysql
+from pymysql.cursors import DictCursor
 from flask import Flask, request, jsonify
 from selenium.webdriver.common.by import By
 from tools import *
@@ -20,6 +23,30 @@ app = Flask(__name__)
 automation_thread = None
 automation_loop = None
 shutdown_file = r"C:\AgentedeVozPython\shutdown.txt"
+
+def fetch_agent_credentials():
+    # 1) IP real de esta máquina
+    ip_local = socket.gethostbyname(socket.gethostname())
+
+    # 2) Conexión a tu BD
+    conn = pymysql.connect(
+        host='192.168.50.13',
+        user='lhernandez',
+        password='lhernandez10',
+        database='asterisk',
+        cursorclass=DictCursor,
+        connect_timeout=5,
+        charset='utf8mb4'
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT extension, username FROM agentesDepuracion WHERE ip = %s LIMIT 1",
+                (ip_local,)
+            )
+            return cur.fetchone()  # {'extension': '6428', 'username': 'BOTo'}
+    finally:
+        conn.close()
 
 def _run_automation_safe():
     # Wrapper que arranca tu automatización
@@ -64,8 +91,44 @@ class VicidialAutomation:
         self._stop = False
 
     def load_config(self, config_file):
-        with open(config_file, 'r') as f:
-            return json.load(f)
+        # 1) Cargo el JSON
+        with open(config_file, 'r', encoding='utf-8') as f:
+            cfg = json.load(f)
+
+        # 2) Obtengo la IP local real del equipo
+        ip_local = socket.gethostbyname(socket.gethostname())
+
+        # 3) Conecto a la BD y traigo extension+username para esta IP
+        try:
+            conn = pymysql.connect(
+                host='192.168.50.13',
+                user='lhernandez',
+                password='lhernandez10',
+                database='asterisk',
+                cursorclass=DictCursor,
+                connect_timeout=5,
+                charset='utf8mb4'
+            )
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT extension, username FROM agentesDepuracion WHERE ip = %s LIMIT 1",
+                    (ip_local,)
+                )
+                row = cursor.fetchone()
+            conn.close()
+        except Exception as e:
+            print(f"❌ Error al conectar a BD: {e}")
+            row = None
+
+        # 4) Si encontré datos, sobrescribo los del JSON
+        if row:
+            cfg['extension'] = row['extension']
+            cfg['username']  = row['username']
+            print(f"✅ Cargando credenciales: ext={row['extension']} user={row['username']}")
+        else:
+            print(f"⚠️ No existe registro en agentesDepuracion para IP {ip_local}; usando valores de config.json")
+
+        return cfg
 
     def _login(self, username, password):
         user_field = self.driver.find_element(By.XPATH,
