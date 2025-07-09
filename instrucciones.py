@@ -17,100 +17,86 @@ def update_client_context_from_db(cuenta: str) -> bool:
         )
 
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            # 1) Seleccionamos sólo las filas "Pendiente"
-            cursor.execute(
-                "SELECT * FROM custom_5008 WHERE cuenta = %s AND status = 'Pendiente' LIMIT 1",
-                (cuenta,)
-            )
+            cursor.execute("SELECT * FROM custom_5008 WHERE cuenta = %s LIMIT 1", (cuenta,))
             row = cursor.fetchone()
 
-            if not row:
-                print(f"⚠️ No hay registros pendientes para la cuenta: {cuenta}")
-                Path(r"C:\AgentedeVozPython\errorcliente.txt")\
-                    .write_text("no existe o no está pendiente", encoding="utf-8")
-                return False
-
-            # ——————————————————————————————————————————————————————————————
-            # 2) Procesamos la fecha_solicitada como antes
-            formatos = ["%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M", "%Y-%m-%d %H:%M:%S"]
-            for fmt in formatos:
+            if row:
                 try:
-                    fecha_dt = datetime.strptime(row["fecha_solicitada"], fmt)
-                    break
-                except ValueError:
-                    continue
+                    formatos = [
+                        "%d/%m/%Y %H:%M:%S",
+                        "%d/%m/%Y %H:%M",
+                        "%Y-%m-%d %H:%M:%S"
+                    ]
+
+                    for fmt in formatos:
+                        try:
+                            fecha_dt = datetime.strptime(row["fecha_solicitada"], fmt)
+                            break
+                        except ValueError:
+                            continue
+                    else:
+                        raise ValueError("Ningún formato válido para fecha_solicitada")
+                except Exception as e:
+                    print(f"❌ Error al procesar la fecha_solicitada: {e}")
+                    hora_vt = "desconocido"
+
+                direccion_raw = row["direccion"] or ""
+                partes = [p.strip() for p in direccion_raw.split(",") if p.strip()]
+                colonia = partes[-2] if len(partes) >= 2 else ""
+
+                hora_actual = datetime.now().hour
+                if 7 <= hora_actual < 12:
+                    saludo_horario = "Buenos días"
+                elif 12 <= hora_actual < 18:
+                    saludo_horario = "Buenas tardes"
+                else:
+                    saludo_horario = "Buenas noches"
+
+                client_context.update({
+                    "NOMBRE_CLIENTE": row["nombreCliente"].title(),
+                    "CUENTA": row["cuenta"],
+                    "NUMERO_ORDEN": row["no_de_orden"],
+                    "Fecha_OS": row["fecha_os"],
+                    "Fecha_VT": row["fecha_solicitada"],
+                    "Tipo": row["tipo"],
+                    "Estado": row["estado"],
+                    "Compania": row["compania"],
+                    "Telefonos": row["telefonos"],
+                    "Telefono_1": row["telefono_1"],
+                    "Telefono_2": row["telefono_2"],
+                    "Telefono_3": row["telefono_3"],
+                    "Telefono_4": row["telefono_4"],
+                    "CIC_Potencia": row["cic_potencia"],
+                    "Tipo_Base": row["Tipo_Base"],
+                    "HUB": row["HUB"],
+                    "Direccion": row["direccion"],
+                    "Colonia": colonia,
+                    "NumeroSerieInternet": row["numeroSerieInternet"],
+                    "NumeroSerieTV1": row["numeroSerieTV1"],
+                    "NumeroSerieTV2": row["numeroSerieTV2"],
+                    "NumeroSerieTV3": row["numeroSerieTV3"],
+                    "NumeroSerieTV4": row["numeroSerieTV4"],
+                    "Status": row["status"],
+                    "referencia1": row["referencia1"],
+                    "referencia2": row["referencia2"],
+                    "NOMBRE_AGENTE": "Liliana Hernández",
+                    "HORA_LLAMADA": datetime.now().strftime("%H:%M"),
+                    "Horario": row["horario"],
+                    "SALUDO": saludo_horario
+                })
+
+                print("🔁 client_context actualizado desde DB:")
+
+                return True
             else:
-                print("❌ Formato de fecha_solicitada no reconocido")
-                fecha_dt = None
-
-            # 3) Extraemos colonia
-            direccion_raw = row["direccion"] or ""
-            partes = [p.strip() for p in direccion_raw.split(",") if p.strip()]
-            colonia = partes[-2] if len(partes) >= 2 else ""
-
-            # 4) Saludo según hora
-            hora_actual = datetime.now().hour
-            if 7 <= hora_actual < 12:
-                saludo_horario = "Buenos días"
-            elif 12 <= hora_actual < 18:
-                saludo_horario = "Buenas tardes"
-            else:
-                saludo_horario = "Buenas noches"
-
-            # 5) Actualizamos el contexto global
-            client_context.update({
-                "NOMBRE_CLIENTE":    row["nombreCliente"].title(),
-                "CUENTA":            row["cuenta"],
-                "NUMERO_ORDEN":      row["no_de_orden"],
-                "Fecha_OS":          row["fecha_os"],
-                "Fecha_VT":          row["fecha_solicitada"],
-                "Tipo":              row["tipo"],
-                "Estado":            row["estado"],
-                "Compania":          row["compania"],
-                "Telefonos":         row["telefonos"],
-                "Telefono_1":        row["telefono_1"],
-                "Telefono_2":        row["telefono_2"],
-                "Telefono_3":        row["telefono_3"],
-                "Telefono_4":        row["telefono_4"],
-                "CIC_Potencia":      row["cic_potencia"],
-                "Tipo_Base":         row["Tipo_Base"],
-                "HUB":               row["HUB"],
-                "Direccion":         row["direccion"],
-                "Colonia":           colonia,
-                "NumeroSerieInternet": row["numeroSerieInternet"],
-                "NumeroSerieTV1":    row["numeroSerieTV1"],
-                "NumeroSerieTV2":    row["numeroSerieTV2"],
-                "NumeroSerieTV3":    row["numeroSerieTV3"],
-                "NumeroSerieTV4":    row["numeroSerieTV4"],
-                "Status":            row["status"],
-                "referencia1":       row["referencia1"],
-                "referencia2":       row["referencia2"],
-                "NOMBRE_AGENTE":     "Liliana Hernández",
-                "HORA_LLAMADA":      datetime.now().strftime("%H:%M"),
-                "Horario":           row["horario"],
-                "SALUDO":            saludo_horario
-            })
-            print("🔁 client_context actualizado desde DB:")
-
-            # 6) Marcamos la fila como 'Completada'
-            cursor.execute(
-                "UPDATE custom_5008 SET status = 'Completada' "
-                "WHERE cuenta = %s AND status = 'Pendiente'",
-                (cuenta,)
-            )
-            conn.commit()
-
-            return True
+                print(f"⚠️ No se encontró la cuenta en la base de datos: {cuenta}")
+                Path(r"C:\AgentedeVozPython\errorcliente.txt").write_text("no existe", encoding="utf-8")
+                return False
 
     except Exception as e:
         print(f"❌ Error al obtener datos del cliente desde la base: {e}")
-        Path(r"C:\AgentedeVozPython\errorcliente.txt")\
-            .write_text("error conexión", encoding="utf-8")
+        Path(r"C:\AgentedeVozPython\errorcliente.txt").write_text("error conexión", encoding="utf-8")
         return False
-
-    finally:
-        conn.close()
-
     
 
 def get_instructions() -> str:
