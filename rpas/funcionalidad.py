@@ -12,7 +12,6 @@ from selenium import webdriver
 from time import sleep
 from rutas import *
 import  pyautogui  as pg
-import autoit as it
 
 def buscar_orden(driver, numero_orden: str):
     print("🔍 Iniciando búsqueda de orden...")
