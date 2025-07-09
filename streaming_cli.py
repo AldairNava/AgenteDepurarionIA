@@ -113,7 +113,7 @@ async def bandera_loop(navegador, client, check_interval: float = 1.0):
                 llamada_activa = True
                 # 1) Extraer cuenta y actualizar contexto
                 cuenta = navegador.driver.find_element(By.XPATH, XPATH_CUENTA).get_attribute('value')
-                cliente = update_client_context_from_db(cuenta)
+                cliente = update_client_context_from_db('34262542')
                 if cliente is None:
                     # Manejo de cuenta no encontrada
                     actualizar_actividad("En Error")
@@ -171,36 +171,38 @@ async def start_agent(navegador):
 
     inactivity_counter = 0
     inactivity_task = None
+    session_active = True
 
     def reset_inactivity_timer():
-        nonlocal inactivity_task, inactivity_counter
+        nonlocal inactivity_task, inactivity_counter, session_active
+        if not session_active:
+            return  # no volvemos a programar nada si ya estamos fuera de sesión
         if inactivity_task:
             inactivity_task.cancel()
         inactivity_counter = 0
         inactivity_task = asyncio.create_task(inactivity_check())
 
     async def inactivity_check():
-        nonlocal inactivity_task, inactivity_counter
+        nonlocal inactivity_task, inactivity_counter, session_active
         try:
+            if not session_active:
+                return  # abandonamos inmediatamente
             print("⏱ Esperando silencio…")
             await asyncio.sleep(40)
-            inactivity_counter += 1
+            if not session_active:
+                return
 
+            inactivity_counter += 1
             if inactivity_counter in (1, 2):
                 print(f"Pregunta de seguimiento {inactivity_counter}")
-                await client.send_text(
-                    "si Ejecutaste la herramienta send_serial di la siguiente frase sin agregar nada a esta"
-                    "(Continuo con usted señor/señorita + [apellido o nombre del cliente] ...) "
-                    "si no ejecutaste el tool di la siguiente frase sin agregar nada más ..."
-                )
+                await client.send_text("…tu mensaje…")
+                # reprogramamos otra ronda
                 inactivity_task = asyncio.create_task(inactivity_check())
             elif inactivity_counter == 3:
                 print("Colgando la llamada")
-                await client.send_text(
-                    "Ejecuta la herramienta *external_pause_and_flag_exit* para finalizar..."
-                )
+                await client.send_text("…tu mensaje de colgar…")
         except asyncio.CancelledError:
-            print("🛑 inactivity_check cancelado (cliente respondió)")
+            print("🛑 inactivity_check cancelado")
 
     client = RealtimeClient(
         api_key=os.getenv('OPENAI_API_KEY'),
@@ -224,6 +226,9 @@ async def start_agent(navegador):
     try:
         while True:
             if os.path.exists(salida_file):
+                session_active = False
+                if inactivity_task:
+                    inactivity_task.cancel()
                 bandera_task.cancel()
                 break
 
