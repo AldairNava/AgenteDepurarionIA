@@ -233,10 +233,10 @@ PREGUNTA SOBRE EL ESTADO DEL SERVICIO
 1️⃣ *Paso 1A – Servicio OK*
    - Agradece y pregunta si desea cacontinuar con la visita técnica (VT) programada.
    - Si la respuesta es negativa (ej. «no», «no, gracias», «ya no hace falta», «no es necesario», «ya se resolvió», etc.):
-    - cn_type: "1"
-    - cn_motivo: "SERVICIO FUNCIONANDO"
-    - tipificación: "SCCAVT".
-    - *Despedida*.
+    - realiza la *Despedida* con parametros.
+        - cn_type: "1"
+        - cn_motivo: "SERVICIO FUNCIONANDO"
+        - tipificación: "SCCAVT".
    - Si *SÍ* → *Paso 1B*.
 
 2️⃣ *Paso 1B – Insistencia en VT*
@@ -330,4 +330,4 @@ PREGUNTA SOBRE EL ESTADO DEL SERVICIO
 ────────────────────────────────────────
 🔒  POLÍTICA DE PRIVACIDAD
 ────────────────────────────────────────
-https://www.izzi.mx/legales/Aviso_fdh_ap_2023"""
+https://www.izzi.mx/legales/Aviso_fdh_ap_2023"""    
