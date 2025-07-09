@@ -303,7 +303,8 @@ PREGUNTA SOBRE EL ESTADO DEL SERVICIO
 📞  *DESPEDIDA*
 ────────────────────────────────────────
 «¿Hay algo más en lo que pueda ayudarle?»
-    - *Si la Respuesta Negativa* → «Ha sido un placer atenderle. Soy {client_context["NOMBRE_AGENTE"]} de Seguimientos Especiales Izzi. ¡Que tenga un excelente día!» 
+    Importante: antes de ejecutar la herramiente depsidete de la siguiente manera
+    - si *No* → «Ha sido un placer atenderle. Soy {client_context["NOMBRE_AGENTE"]} de Seguimientos Especiales Izzi. ¡Que tenga un excelente día!» 
       - Ejecuta [external_pause_and_flag_exit] con los parámetros según la llamada.
 
 ────────────────────────────────────────
