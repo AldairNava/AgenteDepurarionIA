@@ -99,7 +99,7 @@ def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
         return {"result": "False", "error": str(e)}
 
 def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str) -> dict:
-    sleep(5)
+    sleep(7)
     external_hangup()
 
     registro = client_context.copy()

@@ -113,7 +113,7 @@ async def bandera_loop(navegador, client, check_interval: float = 1.0):
                 llamada_activa = True
                 # 1) Extraer cuenta y actualizar contexto
                 cuenta = navegador.driver.find_element(By.XPATH, XPATH_CUENTA).get_attribute('value')
-                cliente = update_client_context_from_db(cuenta)
+                cliente = update_client_context_from_db("43184896")
                 if cliente is None:
                     # Manejo de cuenta no encontrada
                     actualizar_actividad("En Error")
@@ -195,12 +195,18 @@ async def start_agent(navegador):
             inactivity_counter += 1
             if inactivity_counter in (1, 2):
                 print(f"Pregunta de seguimiento {inactivity_counter}")
-                await client.send_text("…tu mensaje…")
+                await client.send_text(
+                        "si Ejecutaste la herramienta send_serial di la siguiente frase sin agregar nada a esta"
+                        "(Continuo con usted señor/señorita + [apellido o nombre del cliente] ...) "
+                        "si no ejecutaste el tool di la siguiente frase sin agregar nada más ..."
+                    )
                 # reprogramamos otra ronda
                 inactivity_task = asyncio.create_task(inactivity_check())
             elif inactivity_counter == 3:
                 print("Colgando la llamada")
-                await client.send_text("…tu mensaje de colgar…")
+                await client.send_text(
+                        "Ejecuta la herramienta *external_pause_and_flag_exit* para finalizar sin decir nada mas"
+                    )
         except asyncio.CancelledError:
             print("🛑 inactivity_check cancelado")
 
