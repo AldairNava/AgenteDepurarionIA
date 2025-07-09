@@ -113,7 +113,7 @@ async def bandera_loop(navegador, client, check_interval: float = 1.0):
                 llamada_activa = True
                 # 1) Extraer cuenta y actualizar contexto
                 cuenta = navegador.driver.find_element(By.XPATH, XPATH_CUENTA).get_attribute('value')
-                cliente = update_client_context_from_db("43184896")
+                cliente = update_client_context_from_db("cuenta")
                 if cliente is None:
                     # Manejo de cuenta no encontrada
                     actualizar_actividad("En Error")
