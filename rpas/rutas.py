@@ -51,3 +51,5 @@ ok_Horario='/html/body/div[11]/div[2]/div/div/div/form/div/div[2]/span[2]/button
 x_modulo='/html/body/div[11]/div[1]/button'
 cerrar_modulo='/html/body/div[11]/div[2]/div/div/div/form/table/tbody/tr[2]/td/table/tbody/tr/td/span[2]/button'
 
+aceptar="/html/body/div[22]/div[2]/div/div/div/form/div/div[2]/span[1]/button"
+

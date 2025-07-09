@@ -79,15 +79,15 @@ def loginSiebel(username, password):
 
             intentos = validar_elemento_presentes(driver, pagina_inicial)
             if intentos < 5:
-                print(f'Inicio de Sesion Exitoso')
+                print(f'Inicio de Sesion Exitoso',intentos)
                 sleep(2)
                 return driver, True
             else:
-                print(f'Inicio de Sesion Fallido')
+                print(f'Inicio de Sesion Fallido',intentos)
                 return driver, False
 
-        except: 
-            print('Error Ingreso Credenciales')
+        except Exception as e: 
+            print(f'Error Ingreso Credenciales: {e}',intentos)
             return driver, False
         
     except Exception as e:

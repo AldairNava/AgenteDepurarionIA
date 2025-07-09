@@ -194,9 +194,9 @@ def validar_elemento_presentes(driver, x_path):
         except Exception as e:
             intentos += 1
             print(f"⏳ Cargando ventana... intento {intentos} fallido. Error: elemento no encontrado")
-            sleep(2)  # Puedes reducir el tiempo si es para debug rápido
+            sleep(3)  # Puedes reducir el tiempo si es para debug rápido
 
-    return intentos, elemento
+    return intentos
 
 
 def cargandoElemento(driver, elemento, atributo, valorAtributo, path = False):
@@ -506,18 +506,49 @@ def manejar_serial(driver, cuenta,serial):
             if resultado == 'elemento no carga': resultado = 'Registro Pendiente'
             return False, resultado, 'Error al enviar comando'
         
-        # #Alerta por prueba
-        # alert = driver.switch_to.alert
-        # # 5a. Para ACEPTAR la alerta (equivale a hacer clic en “Aceptar”)
-        # alert.accept()
-        
+        # try:
+        #     sleep(5)
+        #     #Alerta por prueba
+        #     alert = driver.switch_to.alert
+        #     # 5a. Para ACEPTAR la alerta (equivale a hacer clic en “Aceptar”)
+        #     alert.accept()
+        # except Exception as e:
+        #     print("alerta no disponible")
+
+        intentos = validar_elemento_presentes(driver,"/html/body/div[22]/div[2]/div/div/div/form/div/div[1]/div/div/div[3]/div[2]/div/table/thead/tr/th[2]/div")
+        if intentos< 5:
+            print("bucando reiniciar")
+            try:
+                wait = WebDriverWait(driver, 10)
+                celda_reiniciar = wait.until(EC.element_to_be_clickable(
+                    (By.XPATH, "/html/body/div[22]/div[2]/div/div/div/form/div/div[1]/div/div/div[3]/div[3]/div/div[2]/table/tbody/tr[5]/td[2]")
+                ))
+                
+                celda_reiniciar.click()
+                sleep(3)
+            except Exception as e:
+                print(f"error al buscar comando {e}")
+                return False, resultado, '-'
+        else:
+            return False, resultado, '-'
+
+        try:
+            print("bucando aceptar")
+            wait = WebDriverWait(driver, 10)
+            botno_Aceptar = wait.until(EC.element_to_be_clickable(
+            (By.XPATH, "/html/body/div[22]/div[2]/div/div/div/form/div/div[2]/span[1]/button")))
+            botno_Aceptar.click()
+            sleep(3)
+        except Exception as e:
+            print(f"error en aceptar {e}")
+            return False, resultado, '-'
 
         lupa_busqueda_cuenta, resultado = cargandoElemento(driver, 'a', 'title', 'Pantalla Única de Consulta')
         if lupa_busqueda_cuenta == False: 
             if resultado == 'elemento no carga': resultado = 'Registro Pendiente'
             return False, resultado, '-'
 
-        sleep(15)
+        sleep(10)
 
         
 

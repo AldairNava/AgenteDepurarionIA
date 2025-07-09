@@ -55,11 +55,11 @@ def iniciar_sesion_permanente(usuario, password):
         try:
             driver, status = loginSiebel(usuario, password)
             if status:
-                print('→ LOGIN EXITOSO ←')
+                print(status,'→ LOGIN EXITOSO ←')
                 return driver
-            print('→ LOGIN INCORRECTO, reintentando en 5s...')
+            print('→ LOGIN INCORRECTO, reintentando en 5s...',status)
         except Exception as e:
-            print(f'Error login: {e}, reintentando en 5s...')
+            print(f'Error login: {e}, reintentando en 5s...',status)
         sleep(5)
 
 def keep_alive(driver):
