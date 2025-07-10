@@ -213,7 +213,21 @@ import requests
 # except Exception as e:
 #     print("Error al enviar la petición:", e)
 
-MAIN_SERVICE_URL = "http://192.168.49.111:3000/actualizacion"
+MAIN_SERVICE_URL = "http://192.168.49.113:3000/actualizacion"
+try:
+    resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
+    print("→ Reenvío a main:", resp.status_code, resp.text)
+except Exception as e:
+    print("⚠️ Error reenviando True a main:", e)
+
+MAIN_SERVICE_URL = "http://192.168.49.114:3000/actualizacion"
+try:
+    resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
+    print("→ Reenvío a main:", resp.status_code, resp.text)
+except Exception as e:
+    print("⚠️ Error reenviando True a main:", e)
+
+MAIN_SERVICE_URL = "http://192.168.49.115:3000/actualizacion"
 try:
     resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
     print("→ Reenvío a main:", resp.status_code, resp.text)
