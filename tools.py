@@ -106,6 +106,7 @@ def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
 def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str) -> dict:
     sleep(5)
     external_hangup()
+    sleep(2)
 
     registro = client_context.copy()
     registro.pop("Colonia", None)
