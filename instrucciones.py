@@ -1,8 +1,39 @@
 import pymysql
 from datetime import datetime
 from pathlib import Path
+from pymysql.cursors import DictCursor
 
 client_context = {}
+
+def actualizar_status(cuenta: str, status: str) -> bool:
+    """
+    Actualiza el campo status de la tabla custom_5008 para la cuenta indicada.
+    Devuelve True si la actualización afectó al menos una fila, False en caso contrario o si hubo error.
+    """
+    try:
+        conn = pymysql.connect(
+            host='192.168.50.13',
+            user='lhernandez',
+            password='lhernandez10',
+            database='asterisk',
+            connect_timeout=5,
+            charset='utf8mb4',
+            cursorclass=DictCursor
+        )
+        with conn.cursor() as cursor:
+            sql = "UPDATE custom_5008 SET status = %s WHERE cuenta = %s"
+            cursor.execute(sql, (status, cuenta))
+        conn.commit()
+
+        # Si rowcount > 0 significa que sí se actualizó alguna fila
+        return cursor.rowcount > 0
+
+    except Exception as e:
+        print(f"❌ Error al actualizar status: {e}")
+        return False
+
+    finally:
+        conn.close()
 
 def update_client_context_from_db(cuenta: str) -> bool:
     global client_context
@@ -84,6 +115,7 @@ def update_client_context_from_db(cuenta: str) -> bool:
                     "Horario": row["horario"],
                     "SALUDO": saludo_horario
                 })
+                actualizar_status(cuenta,'Procesando')
 
                 print("🔁 client_context actualizado desde DB:")
 
@@ -156,6 +188,10 @@ def get_instructions() -> str:
 * NO REPETIR: No repitas información salvo que el cliente lo solicite.
 * RETOMA TEMAS: Atiende *todos* los temas que indique el cliente.
 
+⁉️Si el cliente utiliza palabras inexistentes o frases sin sentido:
+    «Disculpa, escuché un poco de ruido en la llamada. ¿Podrías repetir eso nuevamente, por favor? Quiero asegurarme de entenderte correctamente.»
+
+
 * EJECUCIÓN DE HERRAMIENTAS:
     despidete y ejecuta la herramienta
     → Ejecuta siempre la herramienta external_pause_and_flag_exit con los siguientes parámetros:
@@ -216,7 +252,7 @@ SALUDO INICIAL
 «¿Tengo el gusto con  (Sr./Srita.) [{client_context["NOMBRE_CLIENTE"]}] (Solo menciona un nombre y Apellido)]?»
 
 CONFIRMACIÓN DE TITULARIDAD
-«¿Usted es el titular de la cuenta {client_context["CUENTA"]}?»
+«¿Usted es el titular de la cuenta?»
 * Si *NO* → Pregunta con quién te comunicas y compara el nombre con alguno de estos dos [{client_context["referencia1"]} o {client_context["referencia2"]}]. Si coincide, es similar (Si no contienen nada los [] tomalo directamente como que no coincide), pregunta el estado del servicio.
   - Si *NO* coincide o es similar, Pregunta que parentesco tiene con el titular (Espera confirmacion), pregunta si es mayor de edad (Espera Confirmacion) y si puede validar el funcionamiento del servicio.
     - Si *NO* Disculpate por las molestis y menciona que reagendas la llamada para otra ocacion y procede a despedirte
@@ -224,6 +260,7 @@ CONFIRMACIÓN DE TITULARIDAD
 * Si *SÍ* → Pregunta el estado del servicio.
 
 PREGUNTA SOBRE EL ESTADO DEL SERVICIO
+* si la visita tecnica ya fue completada ve al paso → *VT Completada*
 * Si funciona → *Paso 1A*.
 * Si no funciona → *Paso 2A*.
 * Si el servicio funciona pero la visita técnica es por otro motivo que no corresponde a una falla → *Paso 3A*.
@@ -296,6 +333,15 @@ PREGUNTA SOBRE EL ESTADO DEL SERVICIO
 * Equipo dañado:
    - Si daño por cliente → indicar ir a sucursal para cotización.
    - Si no es culpa del cliente → seguir *Paso 1C*.
+
+────────────────────────────────────────
+✅ VT Completada
+────────────────────────────────────────
+    * Ya no preguntes si aun requiere la visita tecnica ya que el tecnico ya acudio solo Haz lo siguiente:
+        * Pregunta si quedo satisfecho con la visita procede con la *DESPEDIDA*
+            - cn_type: "2"
+            - cn_motivo: "SERVICIO FUNCIONANDO"
+            - tipificación: "OSCOM".
 
 ────────────────────────────────────────
 📞  *DESPEDIDA*

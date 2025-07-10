@@ -87,7 +87,7 @@ tools = [
     FunctionTool.from_defaults(fn=transfer_conference),
 ]
 
-async def bandera_loop(navegador, client, check_interval: float = 1.0):
+async def bandera_loop(navegador, client, check_interval: float = 3.0):
     """
     Loop asíncrono que:
      • Detecta ON  → actualiza client_context, envía update_session e inicia conversación.
@@ -97,8 +97,9 @@ async def bandera_loop(navegador, client, check_interval: float = 1.0):
     ip = navegador.config['ip']
     XPATH_BANDERA = '//*[@id="Tabs"]/table/tbody/tr/td[5]/img'
     XPATH_CUENTA  = '//*[@id="last_name"]'
-    
+    intentos = 0
     while True:
+        intentos +=1
         try:
             img = navegador.driver.find_element(By.XPATH, XPATH_BANDERA)
             src = img.get_attribute('src')
@@ -137,6 +138,20 @@ async def bandera_loop(navegador, client, check_interval: float = 1.0):
                 print('📴 Llamada colgada')
                 with open(hangup_file, 'w') as f:
                     f.write('hangup')
+                # if intentos > 5:
+                #     external_hangup()
+                #     sleep(2)
+                #     external_status_DESCONECT()
+                #     sleep(2)
+                #     os.makedirs(os.path.dirname(shutdown_file), exist_ok=True)
+                #     Path(shutdown_file).write_text("apagar", encoding="utf-8")
+                #     actualizar_actividad("En Espera")
+                #     return False
+                
+            # elif os.path.exists(shutdown_file) and src != f'http://{ip}/agc/images/agc_live_call_ON.gif':
+            #     return False
+
+                
             
             
         except Exception as e:
@@ -229,8 +244,12 @@ async def start_agent(navegador):
     asyncio.create_task(audio_handler.start_streaming(client))
     bandera_task = asyncio.create_task(bandera_loop(navegador, client, check_interval=1.0))
 
+
     try:
         while True:
+            # if bandera_task.done() and not bandera_task.result():
+            #     break
+
             if os.path.exists(salida_file):
                 session_active = False
                 if inactivity_task:
@@ -250,6 +269,7 @@ async def start_agent(navegador):
         await client.close()
         agent_started = False
         print("✅ Sesión cerrada correctamente")
+        sleep(5)
 
 
 # if __name__ == "__main__":

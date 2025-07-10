@@ -5,6 +5,7 @@ from instrucciones import client_context
 from pathlib import Path
 import os
 from pymysql.cursors import DictCursor
+from instrucciones import actualizar_status
 import json
 import socket
 import pymysql
@@ -90,6 +91,10 @@ def external_status_NCBUZ() -> dict:    time.sleep(2); return call_vicidial_tool
 # nuemro equivocado
 def external_status_SCNUEQ() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "SCNUEQ")
 
+def external_status_OSCOM() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "OSCOM")
+
+def external_status_DESCONECT() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "DESCONECT")
+
 def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
     try:
         print("Ejecutando send_cn_type con cuenta:", cuenta, "tipo cn:", cn_type, "motivo:", cn_motivo)
@@ -99,7 +104,7 @@ def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
         return {"result": "False", "error": str(e)}
 
 def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str) -> dict:
-    sleep(7)
+    sleep(5)
     external_hangup()
 
     registro = client_context.copy()
@@ -165,9 +170,13 @@ def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str
         external_status_NCBUZ()
     elif tipificacion == 'SCNUEQ':
         external_status_SCNUEQ()
+    elif tipificacion == 'OSCOM':
+        external_status_OSCOM()
     else:
         tipificacion = "OTRO"
         print("⚠️ Tipificación incorrecta o no reconocida.")
+
+    actualizar_status(registro["CUENTA"],'Completada')
 
     return {"result": "ok"}
 
