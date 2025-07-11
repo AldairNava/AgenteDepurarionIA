@@ -108,8 +108,8 @@ def execute_pending_tipificacion() -> None:
         external_status_OSCOM()
     elif pending_tipificacion == 'SIN CONTACTO':
         external_status_SCCCUE()
-    elif pending_tipificacion == 'SIN CONTACTO':
-        external_status_NCBUZ()
+    elif pending_tipificacion == 'NI':
+        external_status_CLMLST()
     else:
         print("⚠️ Tipificación no reconocida:", pending_tipificacion)
 
@@ -191,6 +191,8 @@ def external_status_SCNUEQ() -> dict:   time.sleep(2); return call_vicidial_tool
 def external_status_OSCOM() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "OSCOM")
 
 def external_status_DESCONECT() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "DESCONECT")
+
+def external_status_CLMLST() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "CLMLST")
 
 def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
     try:
