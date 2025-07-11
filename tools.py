@@ -8,6 +8,8 @@ from pymysql.cursors import DictCursor
 from instrucciones import actualizar_status
 import json
 import socket
+from datetime import datetime
+import pytz
 import pymysql
 
 config_file= r'C:\AgentedeVozPython\config.json'
@@ -68,6 +70,99 @@ def call_vicidial_tool(function: str, value: str = "1", extra_args: dict = {}) -
         return {"result": response.ok}
     except Exception as e:
         return {"result": False, "error": str(e)}
+    
+def set_pending_tipificacion(tipificacion: str) -> None:
+    """
+    Guarda la tipificación pendiente para ejecutarse al cierre de sesión.
+    """
+    global pending_tipificacion
+    pending_tipificacion = tipificacion
+
+def execute_pending_tipificacion() -> None:
+    """
+    Ejecuta la tipificación pendiente (llama a external_status_*)
+    y luego limpia la variable global.
+    """
+    global pending_cn_type, pending_cn_motivo, pending_tipificacion
+
+    if pending_tipificacion is None:
+        return
+
+    # Mapeo de tipificaciones
+    if pending_tipificacion == 'SCCAVT':
+        external_status_SCCAVT()
+        insertar_base_not_done_via_api()
+    elif pending_tipificacion == 'SCCOVT':
+        external_status_SCCOVT()
+    elif pending_tipificacion == 'SCTSVT':
+        external_status_SCTSVT()
+    elif pending_tipificacion == 'SCMADI':
+        external_status_SCMADI()
+    elif pending_tipificacion == 'SCCCUE':
+        external_status_SCCCUE()
+    elif pending_tipificacion == 'NCBUZ':
+        external_status_NCBUZ()
+    elif pending_tipificacion == 'SCNUEQ':
+        external_status_SCNUEQ()
+    elif pending_tipificacion == 'OSCOM':
+        external_status_OSCOM()
+    elif pending_tipificacion == 'SIN CONTACTO':
+        external_status_SCCCUE()
+    else:
+        print("⚠️ Tipificación no reconocida:", pending_tipificacion)
+
+    # Actualizar status final en BD
+    from instrucciones import actualizar_status, client_context
+    actualizar_status(client_context["CUENTA"], 'Completada')
+
+    # Limpiar la pendiente
+    pending_cn_type = pending_cn_motivo = pending_tipificacion = None
+
+def insertar_base_not_done_via_api() -> bool:
+    """
+    Llama al servicio InsertarBaseNotDone de DepuracionNotdone
+    usando los valores en client_context.
+    Devuelve True si el servicio responde OK, False en caso contrario.
+    """
+    ip_local = socket.gethostbyname(socket.gethostname())
+    
+    tz_cdmx = pytz.timezone('America/Mexico_City')
+    ahora = datetime.now(tz_cdmx).strftime("%Y-%m-%d %H:%M:%S")
+    
+    url = "https://rpabackizzi.azurewebsites.net/DepuracionNotdone/InsertarDepuracionEXTAGENT"
+    payload = {
+        "lead_id":           client_context.get("lead_id"),
+        "Cuenta":            client_context.get("CUENTA"),
+        "Compania":          client_context.get("Compania"),
+        "NumOrden":          client_context.get("NUMERO_ORDEN"),
+        "Tipo":              client_context.get("Tipo"),
+        "MotivoOrden":       client_context.get("MotivoOrden"),
+        "Source":            "IA AGENT",
+        "time_carga":        ahora,
+        "Status":            "Registro pendiente",
+        "usuario_creo":      config['username'],
+        "User_registro":     f"{ip_local}",
+        "Procesando":        "0",
+    }
+
+    try:
+        resp = requests.post(url, json=payload, timeout=10)
+        resp.raise_for_status()
+        # Si el servicio devuelve JSON con { message: "..."}:
+        data = resp.json()
+        print(f"✅ Inserción exitosa: {data.get('message', data)}")
+        return True
+
+    except requests.HTTPError as errh:
+        print(f"❌ Error HTTP: {errh} – {resp.text}")
+    except requests.ConnectionError as errc:
+        print(f"❌ Error de conexión: {errc}")
+    except requests.Timeout as errt:
+        print(f"❌ Timeout: {errt}")
+    except Exception as err:
+        print(f"❌ Error inesperado: {err}")
+
+    return False
 
 # === TOOLS ===
 # Colgar llamada
@@ -150,32 +245,7 @@ def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str
     Path(SALIDA_ARCHIVO).write_text("salir", encoding="utf-8")
     actualizar_actividad("En Espera")
 
-    # Mapeo completo de tipificaciones
-    if tipificacion == 'SCCAVT':
-        external_status_SCCAVT()
-    elif tipificacion == 'SCCOVT':
-        external_status_SCCOVT()
-    elif tipificacion == 'SCTSVT':
-        external_status_SCTSVT()
-    elif tipificacion == 'SCMADI':
-        external_status_SCMADI()
-    elif tipificacion == 'SCCCUE':
-        external_status_SCCCUE()
-    elif tipificacion == 'SCMADI':
-        external_status_SCMADI()
-    elif tipificacion == 'SIN CONTACTO':
-        external_status_SCCCUE()
-    elif tipificacion == 'NI':
-        external_status_SCCCUE()
-    elif tipificacion == 'NCBUZ':
-        external_status_NCBUZ()
-    elif tipificacion == 'SCNUEQ':
-        external_status_SCNUEQ()
-    elif tipificacion == 'OSCOM':
-        external_status_OSCOM()
-    else:
-        tipificacion = "OTRO"
-        print("⚠️ Tipificación incorrecta o no reconocida.")
+    set_pending_tipificacion(tipificacion)
 
     actualizar_status(registro["CUENTA"],'Completada')
 

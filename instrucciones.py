@@ -186,7 +186,7 @@ def get_instructions() -> str:
 * TEMAS PERMITIDOS: Únicamente dudas sobre el estado del servicio de *Izzi* (Internet, TV, teléfono).
 
 * NO REPETIR: No repitas información salvo que el cliente lo solicite.
-* RETOMA TEMAS: Atiende *todos* los temas que indique el cliente.
+* RETOMA TEMAS: Si el usuario interrumpe con una nueva pregunta o comentario, conserva el contexto de la conversación anterior. No reinicies el tema a menos que el usuario lo indique explícitamente. Si es necesario, retoma desde donde quedó antes de la interrupción.
 
 ⁉️Si el cliente utiliza palabras inexistentes o frases sin sentido:
     «Disculpa, escuché un poco de ruido en la llamada. ¿Podrías repetir eso nuevamente, por favor? Quiero asegurarme de entenderte correctamente.»

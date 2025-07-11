@@ -269,8 +269,8 @@ async def start_agent(navegador):
         await client.close()
         agent_started = False
         print("✅ Sesión cerrada correctamente")
-        sleep(5)
-
+        execute_pending_tipificacion()
+        await asyncio.sleep(1)
 
 # if __name__ == "__main__":
 #     update_client_context_from_db('80135614')
