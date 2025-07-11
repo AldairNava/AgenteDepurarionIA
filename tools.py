@@ -108,6 +108,8 @@ def execute_pending_tipificacion() -> None:
         external_status_OSCOM()
     elif pending_tipificacion == 'SIN CONTACTO':
         external_status_SCCCUE()
+    elif pending_tipificacion == 'SIN CONTACTO':
+        external_status_NCBUZ()
     else:
         print("⚠️ Tipificación no reconocida:", pending_tipificacion)
 
