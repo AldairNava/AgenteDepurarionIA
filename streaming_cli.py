@@ -249,9 +249,10 @@ async def start_agent(navegador):
 
     finally:
         try:    
-            audio_handler.stop_streaming()
-            audio_handler.cleanup()
-            await client.close()
+            stop=audio_handler.stop_streaming()
+            audios=audio_handler.cleanup()
+            cierre = await client.close()
+            print (f"cierre:{cierre}, ",f"audios:{audios}, ",f"stop:{stop}")
             print("✅ Sesión cerrada correctamente")
             agent_started = False
             execute_pending_tipificacion()

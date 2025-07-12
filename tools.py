@@ -152,7 +152,7 @@ def insertar_base_not_done_via_api() -> bool:
         resp.raise_for_status()
         # Si el servicio devuelve JSON con { message: "..."}:
         data = resp.json()
-        print(f"✅ Inserción exitosa: {data.get('message', data)}")
+        print(f"✅ {data.get('message', data)}: {client_context.get("NUMERO_ORDEN")}")
         return True
 
     except requests.HTTPError as errh:
