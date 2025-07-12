@@ -213,26 +213,26 @@ import requests
 # except Exception as e:
 #     print("Error al enviar la petición:", e)
 
-MAIN_SERVICE_URL = "http://192.168.49.113:3000/actualizacion"
-try:
-    resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
-    print("→ Reenvío a main:", resp.status_code, resp.text)
-except Exception as e:
-    print("⚠️ Error reenviando True a main:", e)
+# MAIN_SERVICE_URL = "http://192.168.49.113:3000/actualizacion"
+# try:
+#     resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
+#     print("→ Reenvío a main:", resp.status_code, resp.text)
+# except Exception as e:
+#     print("⚠️ Error reenviando True a main:", e)
 
-MAIN_SERVICE_URL = "http://192.168.49.114:3000/actualizacion"
-try:
-    resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
-    print("→ Reenvío a main:", resp.status_code, resp.text)
-except Exception as e:
-    print("⚠️ Error reenviando True a main:", e)
+# MAIN_SERVICE_URL = "http://192.168.49.114:3000/actualizacion"
+# try:
+#     resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
+#     print("→ Reenvío a main:", resp.status_code, resp.text)
+# except Exception as e:
+#     print("⚠️ Error reenviando True a main:", e)
 
-MAIN_SERVICE_URL = "http://192.168.49.115:3000/actualizacion"
-try:
-    resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
-    print("→ Reenvío a main:", resp.status_code, resp.text)
-except Exception as e:
-    print("⚠️ Error reenviando True a main:", e)
+# MAIN_SERVICE_URL = "http://192.168.49.115:3000/actualizacion"
+# try:
+#     resp = requests.post(MAIN_SERVICE_URL, json={"status": True},timeout=180)
+#     print("→ Reenvío a main:", resp.status_code, resp.text)
+# except Exception as e:
+#     print("⚠️ Error reenviando True a main:", e)
 
 # MAIN_SERVICE_URL = "http://192.168.49.112:3000/estado"
 # try:
@@ -281,3 +281,84 @@ except Exception as e:
 #     args = parser.parse_args()
 
 #     test_set_serial(args.cuenta, args.serial, args.host, args.port)
+
+import socket
+from datetime import datetime
+import pytz
+import pymysql
+
+
+
+def insertar_base_not_done_via_api() -> bool:
+
+    client_context={
+            "NOMBRE_CLIENTE":       "prueba",
+            "CUENTA":               "11234567",
+            "NUMERO_ORDEN":         "prueba",
+            "Fecha_OS":             "prueba",
+            "Fecha_VT":             "prueba",
+            "Tipo":                 "prueba",
+            "Estado":               "prueba",
+            "Compania":             "prueba",
+            "Telefonos":            "prueba",
+            "Telefono_1":           "prueba",
+            "Telefono_2":           "prueba",
+            "Telefono_3":           "prueba",
+            "Telefono_4":           "prueba",
+            "CIC_Potencia":         "prueba",
+            "Tipo_Base":            "prueba",
+            "HUB":                  "prueba",
+            "Direccion":            "prueba",
+            "Colonia":              "prueba",
+            "NumeroSerieInternet":  "prueba",
+            "NumeroSerieTV1":       "prueba",
+            "NumeroSerieTV2":       "prueba",
+            "NumeroSerieTV3":       "prueba",
+            "NumeroSerieTV4":       "prueba",
+            "Status":               "prueba",
+            "referencia1":          "prueba",
+            "referencia2":          "prueba",
+            "NOMBRE_AGENTE":        "Liliana Hernández",
+            "HORA_LLAMADA":         "prueba",
+            "Horario":              "prueba",
+            "SALUDO":               "hola"
+        }
+    ip_local = socket.gethostbyname(socket.gethostname())
+    
+    tz_cdmx = pytz.timezone('America/Mexico_City')
+    ahora = datetime.now(tz_cdmx).strftime("%Y-%m-%d %H:%M:%S")
+    
+    url = "https://rpabackizzi.azurewebsites.net/DepuracionNotdone/InsertarDepuracionEXTAGENT"
+    payload = {
+        "lead_id":           client_context.get("lead_id"),
+        "Cuenta":            client_context.get("CUENTA"),
+        "Compania":          client_context.get("Compania"),
+        "NumOrden":          client_context.get("NUMERO_ORDEN"),
+        "Tipo":              client_context.get("Tipo"),
+        "MotivoOrden":       client_context.get("MotivoOrden"),
+        "Source":            "IA AGENT",
+        "time_carga":        ahora,
+        "Status":            "Registro pendiente",
+        "usuario_creo":      "Prueba",
+        "User_registro":     f"{ip_local}",
+        "Procesando":        "0",
+    }
+
+    try:
+        resp = requests.post(url, json=payload, timeout=10)
+        resp.raise_for_status()
+        # Si el servicio devuelve JSON con { message: "..."}:
+        data = resp.json()
+        print(f"✅ Inserción exitosa: {data.get('message', data)}")
+        return True
+
+    except requests.HTTPError as errh:
+        print(f"❌ Error HTTP: {errh} – {resp.text}")
+    except requests.ConnectionError as errc:
+        print(f"❌ Error de conexión: {errc}")
+    except requests.Timeout as errt:
+        print(f"❌ Timeout: {errt}")
+    except Exception as err:
+        print(f"❌ Error inesperado: {err}")
+
+    return False

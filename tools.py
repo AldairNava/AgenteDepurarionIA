@@ -115,7 +115,7 @@ def execute_pending_tipificacion() -> None:
 
     # Actualizar status final en BD
     from instrucciones import actualizar_status, client_context
-    actualizar_status(client_context["CUENTA"], 'Completada')
+    actualizar_status(client_context["NUMERO_ORDEN"], 'Completada')
 
     # Limpiar la pendiente
     pending_cn_type = pending_cn_motivo = pending_tipificacion = None
@@ -194,14 +194,6 @@ def external_status_DESCONECT() -> dict:   time.sleep(2); return call_vicidial_t
 
 def external_status_CLMLST() -> dict:   time.sleep(2); return call_vicidial_tool("external_status", "CLMLST")
 
-def send_cn_type(cuenta: str, cn_type: str, cn_motivo: str) -> dict:
-    try:
-        print("Ejecutando send_cn_type con cuenta:", cuenta, "tipo cn:", cn_type, "motivo:", cn_motivo)
-        sleep(5)
-        return {"result": "ok"}
-    except Exception as e:
-        return {"result": "False", "error": str(e)}
-
 def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str) -> dict:
     sleep(5)
     external_hangup()
@@ -251,7 +243,7 @@ def external_pause_and_flag_exit(cn_type: str, cn_motivo: str, tipificacion: str
 
     set_pending_tipificacion(tipificacion)
 
-    actualizar_status(registro["CUENTA"],'Completada')
+    actualizar_status(registro["NUMERO_ORDEN"],'Completada')
 
     return {"result": "ok"}
 

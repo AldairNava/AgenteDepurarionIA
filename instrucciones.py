@@ -5,7 +5,7 @@ from pymysql.cursors import DictCursor
 
 client_context = {}
 
-def actualizar_status(cuenta: str, status: str) -> bool:
+def actualizar_status(ORDEN: str, status: str) -> bool:
     """
     Actualiza el campo status de la tabla custom_5008 para la cuenta indicada.
     Devuelve True si la actualización afectó al menos una fila, False en caso contrario o si hubo error.
@@ -21,8 +21,8 @@ def actualizar_status(cuenta: str, status: str) -> bool:
             cursorclass=DictCursor
         )
         with conn.cursor() as cursor:
-            sql = "UPDATE custom_5008 SET status = %s WHERE cuenta = %s"
-            cursor.execute(sql, (status, cuenta))
+            sql = "UPDATE custom_5008 SET status = %s WHERE no_de_orden = %s"
+            cursor.execute(sql, (status, ORDEN))
         conn.commit()
 
         # Si rowcount > 0 significa que sí se actualizó alguna fila
@@ -48,7 +48,7 @@ def update_client_context_from_db(cuenta: str) -> bool:
         )
 
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("SELECT * FROM custom_5008 WHERE cuenta = %s LIMIT 1", (cuenta,))
+            cursor.execute("SELECT * FROM custom_5008 WHERE no_de_orden = %s LIMIT 1", (cuenta,))
             row = cursor.fetchone()
 
             if row:

@@ -96,15 +96,13 @@ async def bandera_loop(navegador, client, check_interval: float = 3.0):
     llamada_activa = False
     ip = navegador.config['ip']
     XPATH_BANDERA = '//*[@id="Tabs"]/table/tbody/tr/td[5]/img'
-    XPATH_CUENTA  = '//*[@id="last_name"]'
+    XPATH_ORDEN  = '//*[@id="last_name"]'
     intentos = 0
     while True:
         intentos +=1
         try:
             img = navegador.driver.find_element(By.XPATH, XPATH_BANDERA)
             src = img.get_attribute('src')
-            
-            # if os.path.exists(shutdown_file):
 
             
             # -----------------------------
@@ -112,11 +110,11 @@ async def bandera_loop(navegador, client, check_interval: float = 3.0):
             # -----------------------------
             if src == f'http://{ip}/agc/images/agc_live_call_ON.gif' and not llamada_activa:
                 llamada_activa = True
-                # 1) Extraer cuenta y actualizar contexto
-                cuenta = navegador.driver.find_element(By.XPATH, XPATH_CUENTA).get_attribute('value')
-                cliente = update_client_context_from_db(cuenta)
+                # 1) Extraer ORDEN y actualizar contexto
+                ORDEN = navegador.driver.find_element(By.XPATH, XPATH_ORDEN).get_attribute('value')
+                cliente = update_client_context_from_db(ORDEN)
                 if cliente is None:
-                    # Manejo de cuenta no encontrada
+                    # Manejo de ORDEN no encontrada
                     actualizar_actividad("En Error")
                     external_hangup()
                     sleep(1)
@@ -138,18 +136,6 @@ async def bandera_loop(navegador, client, check_interval: float = 3.0):
                 print('📴 Llamada colgada')
                 with open(hangup_file, 'w') as f:
                     f.write('hangup')
-                # if intentos > 5:
-                #     external_hangup()
-                #     sleep(2)
-                #     external_status_DESCONECT()
-                #     sleep(2)
-                #     os.makedirs(os.path.dirname(shutdown_file), exist_ok=True)
-                #     Path(shutdown_file).write_text("apagar", encoding="utf-8")
-                #     actualizar_actividad("En Espera")
-                #     return False
-                
-            # elif os.path.exists(shutdown_file) and src != f'http://{ip}/agc/images/agc_live_call_ON.gif':
-            #     return False
 
                 
             
@@ -247,8 +233,6 @@ async def start_agent(navegador):
 
     try:
         while True:
-            # if bandera_task.done() and not bandera_task.result():
-            #     break
 
             if os.path.exists(salida_file):
                 session_active = False
@@ -264,13 +248,21 @@ async def start_agent(navegador):
             await asyncio.sleep(0.1)
 
     finally:
-        audio_handler.stop_streaming()
-        audio_handler.cleanup()
-        await client.close()
-        agent_started = False
-        print("✅ Sesión cerrada correctamente")
-        execute_pending_tipificacion()
-        await asyncio.sleep(1)
+        try:    
+            audio_handler.stop_streaming()
+            audio_handler.cleanup()
+            await client.close()
+            print("✅ Sesión cerrada correctamente")
+            agent_started = False
+            execute_pending_tipificacion()
+            await asyncio.sleep(1)
+        except Exception as e:
+            print(f"❌ Error al cerrar el cliente WebSocket: {e}")
+            execute_pending_tipificacion()
+            open(shutdown_file, 'w').close()
+
+        
+        
 
 # if __name__ == "__main__":
 #     update_client_context_from_db('80135614')
